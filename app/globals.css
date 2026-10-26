@@ -1,0 +1,365 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ */
+/* 1. Tokens                                                           */
+/* ------------------------------------------------------------------ */
+@theme {
+  --color-ink: #0b0b0c;
+  --color-forest-deep: #0d211b;
+  --color-forest: #16332b;
+  --color-forest-soft: #1e463a;
+  --color-gold: #c2a36b;
+  --color-gold-bright: #e4cf9c;
+  --color-gold-deep: #9c7f49;
+  --color-gold-text: #7a6134;
+  --color-cream: #f7f2e8;
+  --color-cream-soft: #fbf8f1;
+  --color-stone: #6b6557;
+  --color-error: #b4432f;
+
+  /* next/font variables are set on <html>; the CJK ones only exist on /zh. */
+  --font-display: var(--font-display-src, Georgia), var(--font-cjk-serif, Georgia), Georgia,
+    "Times New Roman", "Songti SC", serif;
+  --font-sans: var(--font-commissioner, ui-sans-serif), var(--font-cjk-sans, ui-sans-serif),
+    ui-sans-serif, system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
+
+  --radius-card: 1.125rem;
+
+  --ease-lux: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+}
+
+/* ------------------------------------------------------------------ */
+/* 2. Base                                                             */
+/* ------------------------------------------------------------------ */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5.5rem;
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  background: var(--color-cream-soft);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+::selection {
+  background: var(--color-gold);
+  color: #0b0b0c;
+}
+:focus-visible {
+  outline: 2px solid var(--color-gold-bright);
+  outline-offset: 3px;
+}
+[data-theme="light"] :focus-visible {
+  outline-color: var(--color-gold-deep);
+}
+
+/* ------------------------------------------------------------------ */
+/* 3. Keyframes                                                        */
+/* ------------------------------------------------------------------ */
+@keyframes gold-shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+@keyframes outline-glint {
+  0%, 100% { -webkit-text-stroke-color: var(--color-gold-bright); }
+  50% { -webkit-text-stroke-color: var(--color-cream-soft); }
+}
+@keyframes hotspot-ping {
+  0% { opacity: 0.7; scale: 1; }
+  70%, 100% { opacity: 0; scale: 2.9; }
+}
+@keyframes svg-ping {
+  0% { opacity: 0.8; r: 2.8; }
+  70%, 100% { opacity: 0; r: 9; }
+}
+
+/* ------------------------------------------------------------------ */
+/* 4. Gradients, textures, rules                                       */
+/* ------------------------------------------------------------------ */
+.hero-radial { background: radial-gradient(120% 90% at 50% -10%, #1e463a 0%, #102a23 45%, #0b1c18 100%); }
+.hero-vignette { background: radial-gradient(115% 115% at 50% 45%, transparent 0%, rgba(11, 28, 24, 0.42) 68%, rgba(11, 28, 24, 0.74) 100%); }
+.forest-corner { background: radial-gradient(110% 80% at 15% 0%, #1e463a 0%, #0d211b 70%); }
+.rule-gold-h {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-gold) 55%, transparent) 50%, transparent);
+}
+.rule-gold-v {
+  width: 1px;
+  background: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--color-gold) 55%, transparent) 3%, color-mix(in srgb, var(--color-gold) 55%, transparent) 97%, transparent 100%);
+}
+.rule-top { position: relative; }
+.rule-top::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-gold) 55%, transparent) 50%, transparent);
+  pointer-events: none;
+}
+.hairline { border-color: color-mix(in srgb, var(--color-gold) 28%, transparent); }
+.mask-fade-up {
+  -webkit-mask-image: linear-gradient(to top, black 28%, transparent 92%);
+  mask-image: linear-gradient(to top, black 28%, transparent 92%);
+}
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* ------------------------------------------------------------------ */
+/* 5. Gold text treatments                                             */
+/* ------------------------------------------------------------------ */
+.gold-sheen-bg {
+  background-image: linear-gradient(110deg, #c2a36b 0 32%, #e4cf9c 44%, #fbf8f1 50%, #e4cf9c 56%, #c2a36b 68% 100%);
+  background-size: 200% 100%;
+}
+.text-shimmer-gold {
+  background-image: linear-gradient(110deg, #c2a36b 0 32%, #e4cf9c 44%, #fbf8f1 50%, #e4cf9c 56%, #c2a36b 68% 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gold-shimmer 3s linear infinite;
+  padding-inline: 0.08em; /* keeps italic overhang inside the clip box */
+}
+.text-stroke-gold {
+  position: relative;
+  display: inline-block;
+}
+.text-stroke-gold::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  padding-inline: 0.08em;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--color-gold-bright);
+  animation: outline-glint 3s ease-in-out infinite;
+  pointer-events: none;
+}
+.wordmark-shadow { filter: drop-shadow(0 8px 18px #0000008c); }
+
+.brand-logo,
+.brand-logo-dark {
+  position: relative;
+  display: inline-block;
+  font-family: var(--font-display);
+  font-style: italic;
+  line-height: 1;
+  padding-inline: 0.06em;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  transition: background-image 0.4s;
+}
+.brand-logo { background-image: linear-gradient(135deg, #e4cf9c, #c2a36b 60%, #e4cf9c); }
+.brand-logo-dark { background-image: linear-gradient(135deg, #9c7f49, #7a6134 60%, #9c7f49); }
+.brand-logo::after,
+.brand-logo-dark::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  padding-inline: 0.06em;
+  color: transparent;
+  -webkit-text-stroke: 0.6px var(--color-gold-bright);
+  pointer-events: none;
+}
+.brand-logo-dark::after { -webkit-text-stroke-color: var(--color-gold-deep); }
+
+/* ------------------------------------------------------------------ */
+/* 6. Shimmer border, glass                                            */
+/* ------------------------------------------------------------------ */
+.shimmer-border-gold { position: relative; }
+.shimmer-border-gold::before,
+.btn-gold::before,
+.btn-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: linear-gradient(110deg, #c2a36b 0 32%, #e4cf9c 44%, #fbf8f1 50%, #e4cf9c 56%, #c2a36b 68% 100%) 0 0 / 200% 100%;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  animation: gold-shimmer 3s linear infinite;
+  pointer-events: none;
+  z-index: 3;
+}
+.btn-glass::before { padding: 1px; opacity: 0.55; }
+.btn-gold::before { padding: 1px; opacity: 0.8; }
+
+.glass-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, currentColor 8%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 22%, transparent);
+  -webkit-backdrop-filter: blur(7px) saturate(125%);
+  backdrop-filter: blur(7px) saturate(125%);
+  transition: background-color 0.3s, box-shadow 0.3s, color 0.3s;
+}
+.glass-chip:hover {
+  background: color-mix(in srgb, currentColor 16%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 40%, transparent);
+}
+.glass-card {
+  background: color-mix(in srgb, var(--color-cream-soft) 78%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+  box-shadow:
+    inset 0 0 0 1px #ffffff8c,
+    0 16px 40px -16px #3a2e164d,
+    0 0 24px -10px color-mix(in srgb, var(--color-gold) 60%, transparent);
+}
+.nav-glass {
+  -webkit-backdrop-filter: blur(11px) saturate(150%);
+  backdrop-filter: blur(11px) saturate(150%);
+  background: linear-gradient(#f7f2e81f, #f7f2e80d);
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--color-gold) 18%, transparent);
+}
+.hotspot-label-shadow { box-shadow: 0 4px 14px -5px rgba(58, 46, 22, 0.45); }
+
+/* ------------------------------------------------------------------ */
+/* 7. Buttons                                                          */
+/* ------------------------------------------------------------------ */
+.btn {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3.25rem;
+  padding: 0.75rem 1.85rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-align: center;
+  transition: transform 0.4s var(--ease-lux), opacity 0.3s;
+  cursor: pointer;
+}
+.btn:active { transform: translateY(1px) scale(0.99); }
+.btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.55s var(--ease-out);
+  z-index: -1;
+}
+.btn:hover::after { opacity: 1; }
+.btn:disabled { cursor: not-allowed; }
+.btn-gold {
+  color: var(--color-ink);
+  background: linear-gradient(135deg, #e4cf9c, #c2a36b);
+}
+.btn-gold::after { background: linear-gradient(135deg, #ecdbb2, #ceb078); }
+.btn-glass {
+  color: var(--color-cream);
+  background: #f7f2e80d;
+  -webkit-backdrop-filter: blur(7px) saturate(125%);
+  backdrop-filter: blur(7px) saturate(125%);
+  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.09);
+}
+.btn-glass::after { background: #f7f2e81f; }
+
+/* ------------------------------------------------------------------ */
+/* 8. Reveal                                                           */
+/* ------------------------------------------------------------------ */
+.reveal-armed {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.9s var(--ease-lux), transform 0.9s var(--ease-lux);
+}
+.reveal-armed.is-visible {
+  opacity: 1;
+  transform: none;
+}
+/* Partnership level bars grow when their block is revealed. */
+.level-bar {
+  width: var(--bar);
+  transition: width 1.2s var(--ease-lux);
+}
+.reveal-armed .level-bar { width: 0; }
+.reveal-armed.is-visible .level-bar { width: var(--bar); }
+
+/* ------------------------------------------------------------------ */
+/* 9. Misc component bits                                              */
+/* ------------------------------------------------------------------ */
+.hotspot-ping { animation: hotspot-ping 2.4s var(--ease-out) infinite; }
+.map-ping { animation: svg-ping 2.4s var(--ease-out) infinite; transform-box: fill-box; }
+.placeholder-stripes {
+  background-image:
+    repeating-linear-gradient(135deg, color-mix(in srgb, var(--color-gold) 9%, transparent) 0 1px, transparent 1px 14px),
+    linear-gradient(135deg, color-mix(in srgb, var(--color-gold) 10%, transparent), transparent 60%);
+}
+.mask-logo {
+  display: inline-block;
+  background-color: currentColor;
+  -webkit-mask: var(--logo) center / contain no-repeat;
+  mask: var(--logo) center / contain no-repeat;
+}
+
+/* Mobile menu: animations restart each time the dialog is un-hidden */
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes menu-in { from { opacity: 0; transform: translateY(1rem); } to { opacity: 1; transform: none; } }
+#mobile-menu:not([hidden]) > div { animation: fade-in 0.5s var(--ease-out) both; }
+#mobile-menu:not([hidden]) .menu-item { animation: menu-in 0.5s var(--ease-lux) both; }
+
+/* Lightbox dialog */
+dialog.lightbox {
+  max-width: 100vw;
+  max-height: 100svh;
+  width: 100vw;
+  height: 100svh;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-cream);
+}
+dialog.lightbox::backdrop {
+  background: color-mix(in srgb, var(--color-ink) 90%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+dialog.lightbox[open] .lightbox-stage { animation: lightbox-in 0.3s var(--ease-lux); }
+@keyframes lightbox-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ------------------------------------------------------------------ */
+/* 10. Reduced motion (required)                                       */
+/* ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .text-shimmer-gold,
+  .text-stroke-gold::after,
+  .shimmer-border-gold::before,
+  .btn-gold::before,
+  .btn-glass::before,
+  .hotspot-ping,
+  .map-ping,
+  dialog.lightbox[open] .lightbox-stage,
+  #mobile-menu:not([hidden]) > div,
+  #mobile-menu:not([hidden]) .menu-item {
+    animation: none !important;
+  }
+  .text-shimmer-gold,
+  .shimmer-border-gold::before,
+  .btn-gold::before,
+  .btn-glass::before {
+    background-position: 50% 0;
+  }
+  .hotspot-ping, .map-ping { opacity: 0; }
+  .reveal-armed { opacity: 1; transform: none; transition: none; }
+  .level-bar, .reveal-armed .level-bar { width: var(--bar); transition: none; }
+  *, *::before, *::after { transition-duration: 0.01ms !important; }
+}
