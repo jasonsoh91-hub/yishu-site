@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { RichText } from "./RichText";
 
 export function SectionHeading({
@@ -13,7 +14,7 @@ export function SectionHeading({
 }: {
   id?: string;
   eyebrow?: string;
-  title: string;
+  title: string | ReactNode;
   lead?: string;
   align?: "left" | "center";
   tone?: "dark" | "light";
@@ -39,7 +40,7 @@ export function SectionHeading({
           eyebrow ? "mt-4" : ""
         } ${dark ? "text-cream" : "text-ink"} ${titleClassName}`}
       >
-        <RichText text={title} />
+        {typeof title === "string" ? <RichText text={title} /> : title}
       </Tag>
       {lead ? (
         <p

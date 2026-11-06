@@ -59,12 +59,16 @@ export interface Content {
     eyebrow: string;
     title: string;
     standards: { name: string; note: string; logo?: "ce" | "fcc" }[];
+    about: {
+      title: string;
+      paragraphs: string[];
+    };
     stats: { value: string; label: string }[];
     markets: {
       title: string;
       lead: string;
-      /** `code` must match a key in lib/world-map.ts PINS. */
-      countries: { code: string; name: string }[];
+      /** `code` must match a key in lib/world-map.ts PINS. `hq` = highlighted pin (arcs start from the first one). */
+      countries: { code: string; name: string; hq?: boolean }[];
     };
   };
 
@@ -108,6 +112,15 @@ export interface Content {
     /** First column is always the Yishu product. */
     columns: string[];
     rows: { k: string; v: string[] }[];
+  };
+
+  /** Customer before/after photos. `items` pair by index with site.images.results. */
+  results: {
+    eyebrow: string;
+    title: string;
+    lead: string;
+    disclaimer: string;
+    items: { caption: string }[];
   };
 
   catalog: {
@@ -189,6 +202,7 @@ export interface Content {
     emailLabel: string;
     whatsappLabel: string;
     followLabel: string;
+    unavailable: string;
     interests: { id: string; label: string }[];
     labels: {
       name: string;
@@ -198,8 +212,10 @@ export interface Content {
       message: string;
       submit: string;
       sending: string;
+      unavailable: string;
     };
-    errors: { name: string; phone: string; email: string };
+    /** `send` is shown when the request could not be delivered. */
+    errors: { name: string; phone: string; email: string; send: string };
     consent: string;
     success: { title: string; text: string; again: string };
   };

@@ -15,7 +15,7 @@ export function Hero({ c }: { c: Content }) {
       id="top"
       data-theme="dark"
       aria-label={h.wordmark}
-      className="relative isolate flex min-h-svh items-center overflow-hidden bg-forest-deep pt-32 pb-24 text-cream"
+      className="relative isolate flex min-h-svh flex-col items-center justify-center overflow-hidden bg-forest-deep px-5 pt-32 pb-24 text-center text-cream sm:px-8"
     >
       <div aria-hidden className="absolute inset-0 -z-10">
         <div className="hero-radial absolute inset-0" />
@@ -35,12 +35,12 @@ export function Hero({ c }: { c: Content }) {
         <div className="absolute inset-x-0 bottom-0 h-[28rem] bg-gradient-to-t from-forest-deep via-forest-deep/55 to-transparent" />
       </div>
 
-      <div className="mx-auto w-full max-w-3xl px-5 text-center sm:px-8">
+      <div className="relative flex w-full max-w-3xl flex-col items-center">
         <Reveal>
           <h1 className="font-display text-7xl leading-none italic sm:text-8xl md:text-9xl lg:text-[10rem]">
             <ShimmerWord text={h.wordmark} className="wordmark-shadow" />
           </h1>
-          <p className="mt-5 text-xs font-medium tracking-[0.18em] text-gold-bright uppercase">{h.eyebrow}</p>
+          {h.eyebrow ? <p className="mt-5 text-xs font-medium tracking-[0.18em] text-gold-bright uppercase">{h.eyebrow}</p> : null}
         </Reveal>
         <Reveal delay={100}>
           <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-pretty text-cream/80 sm:text-lg">

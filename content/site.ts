@@ -1,18 +1,19 @@
 // Locale-independent settings: business details, contact, currency, image slots and numbers.
 // Edit this file once; it applies to /en, /zh and /ms.
 //
-// IMAGES: drop files into public/images/ using the exact paths below. Any slot whose file is
-// missing renders a <Placeholder> box showing the filename and brief, so the layout never breaks.
-// Restart `npm run dev` (or re-run `npm run build`) after adding files.
+// Images below mirror the approved public assets on yishu.su. Any missing slot still falls back
+// to a labelled placeholder so the layout cannot collapse during future asset updates.
 
 export type ImgSlot = { src: string; brief: string };
 
 const img = (src: string, brief: string): ImgSlot => ({ src, brief });
 
 export const site = {
-  resellerName: "Your Business Name", // TODO owner
-  siteUrl: "https://example.com", // TODO owner: used for canonical / OG URLs
+  resellerName: "Yishu Malaysia",
+  siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   defaultLocale: "en" as const,
+  /** The enquiry form switches on when the Google Sheet endpoint is configured (see scripts/google-sheet-lead.gs). */
+  leadFormEnabled: Boolean(process.env.LEAD_SHEET_URL && process.env.LEAD_SHEET_SECRET),
 
   /** Currency for every RM figure on the site. Formatted as "RM 3,500". */
   currency: { code: "MYR", symbol: "RM", locale: "en-MY" },
@@ -20,17 +21,18 @@ export const site = {
   levelsCurrency: { code: "USD", symbol: "US$", locale: "en-US" },
 
   contact: {
-    phone: "+60 00-000 0000", // placeholder
-    phoneHref: "tel:+60000000000", // placeholder
-    email: "hello@example.com", // placeholder
-    whatsapp: "https://wa.me/600000000000", // placeholder
+    // Gary Yeow (consultant).
+    phone: "+60 19-218 8262",
+    phoneHref: "tel:+60192188262",
+    email: "yeow_gary@yahoo.com",
+    whatsapp: "https://wa.me/60192188262",
     socials: [
-      { label: "Instagram", href: "#", icon: "instagram" as const },
-      { label: "Facebook", href: "#", icon: "facebook" as const },
-      { label: "Telegram", href: "#", icon: "telegram" as const },
-    ],
+      { label: "Facebook", href: "https://www.facebook.com/share/1CWTH3ftDw/", icon: "facebook" },
+      { label: "Instagram", href: "https://www.instagram.com/garyyeow", icon: "instagram" },
+      { label: "LinkedIn", href: "https://www.linkedin.com/in/gary-yeow-b7ab8a35/", icon: "linkedin" },
+    ] as { label: string; href: string; icon: "instagram" | "facebook" | "telegram" | "linkedin" }[],
   },
-  privacyHref: "#", // TODO owner: privacy policy URL
+  privacyHref: "",
 
   /** Optional WebGL particle layer in the hero (not built yet; flag kept for later). */
   heroParticles: false,
@@ -44,11 +46,11 @@ export const site = {
     patents: { x: "50%", y: "80%" },
   } as Record<string, { x: string; y: string }>,
 
-  /** Income illustration: (masksPerSet - keepForSelf) × pricePerSession, in site.currency. */
+  /** Income illustration converted from the reference site's RUB example at 1 RUB = RM 0.050607. */
   maths: {
     masksPerSet: 40,
     keepForSelf: 10,
-    pricePerSession: 0, // TODO owner: your local session price in RM. 0 shows a "set your price" note.
+    pricePerSession: 177,
   },
 
   /** Levels Y0–Y6. `min` in levelsCurrency; `upTo` renders "up to" instead of "from". `bar` is visual width %. */
@@ -63,41 +65,73 @@ export const site = {
   ],
 
   images: {
-    hero: img("/images/hero.webp", "16:9, 2400×1350. Product on a stone plinth, dark forest green, low warm light, centre dark"),
-    cosmos: img("/images/cosmos.webp", "16:9. Soft starfield / gold dust on black"),
-    zheng: [1, 2, 3, 4, 5].map((n) =>
-      img(`/images/zheng-${n}.webp`, "1:1, transparent. Gold line-art illustration"),
-    ),
-    productBg: img("/images/product-bg.webp", "16:9. Very light cream texture (silk, paper)"),
-    productMask: img("/images/product-mask.webp", "1142×1234. Mask + unit on light background, mask centred"),
+    hero: img("/images/hero-bg.webp", "Yishu hero artwork"),
+    cosmos: img("/images/cosmos-bg.webp", "Gold light field"),
+    aboutBg: img("/images/about-bg.webp", "Yishu company background"),
+    zheng: [
+      img("/images/zheng-1-zhengjian-gpt.webp", "Zheng Jian artwork"),
+      img("/images/zheng-2-zhengnian-gpt.webp", "Zheng Nian artwork"),
+      img("/images/zheng-3-zhengxing-gpt.webp", "Zheng Xing artwork"),
+      img("/images/zheng-4-zhengshi-gpt.webp", "Zheng Shi artwork"),
+      img("/images/zheng-5-zhengyuan-gpt.webp", "Zheng Yuan artwork"),
+    ],
+    productBg: img("/images/flagship-section-bg.webp", "Smart mask section background"),
+    productMask: img("/images/flagship-mask-trim.webp", "Yishu smart mask"),
     ingredient: Object.fromEntries(
       ["aloe", "sophora", "purslane", "chamomile", "algae"].map((id) => [
         id,
-        img(`/images/ingredient-${id}.webp`, "1:1. Airy macro photo of the plant"),
+        img(`/images/ingredient-${id === "algae" ? "macroalgae" : id}.webp`, "Ingredient photograph"),
       ]),
     ) as Record<string, ImgSlot>,
     ingredientIcon: Object.fromEntries(
       ["aloe", "sophora", "purslane", "chamomile", "algae"].map((id) => [
         id,
-        img(`/images/ingredient-icon-${id}.webp`, "1:1, 320px, transparent cut-out"),
+        img(`/images/ingredient-icon-${id === "algae" ? "macroalgae" : id}.webp`, "Ingredient cut-out"),
       ]),
     ) as Record<string, ImgSlot>,
-    compareBg: img("/images/compare-bg.webp", "16:9. Pale cream / gold abstract"),
-    bundle: Object.fromEntries(
-      ["manager", "combo", "magnetic", "director", "board"].map((id) => [
-        id,
-        img(`/images/bundle-${id}.webp`, "4:3. Bundle laid flat on cream, top-down"),
-      ]),
-    ) as Record<string, ImgSlot>,
-    certificatesBg: img("/images/certificates-bg.webp", "16:9. Pale paper texture"),
-    certificates: [1, 2, 3, 4, 5, 6, 7].map((n) =>
-      img(`/images/certificates/cert-${n}.webp`, "3:4, ~1240×1650. Scan you may publish; redact personal data"),
-    ),
-    people: [1, 2, 3, 4, 5].map((n) =>
-      img(`/images/person-${n}.webp`, "3:4, transparent. Chest-up cut-out portrait"),
-    ),
-    consultantBg: img("/images/consultant-bg.webp", "16:9. Dark ink with gold bokeh"),
-    consultant: img("/images/consultant.webp", "1536×2010, transparent. Your own waist-up cut-out"),
+    compareBg: img("/images/compare-light-bg.webp", "Comparison section background"),
+    bundle: {
+      manager: img("/images/prod-manager-cream.webp", "Manager package"),
+      combo: img("/images/prod-combo-cream.webp", "Combination package"),
+      magnetic: img("/images/prod-tailuo-cream.webp", "TIL Taileshu magnetic set"),
+      director: img("/images/prod-director-cream.webp", "Director facial mask set"),
+      board: img("/images/prod-board-cream.webp", "Board composition"),
+    } as Record<string, ImgSlot>,
+    results: [
+      { src: "/results/result-1.webp", w: 792, h: 1056 },
+      { src: "/results/result-2.webp", w: 732, h: 596 },
+      { src: "/results/result-3.webp", w: 1080, h: 756 },
+      { src: "/results/result-4.webp", w: 1280, h: 853 },
+      { src: "/results/result-5.webp", w: 1280, h: 854 },
+      { src: "/results/result-6.webp", w: 1256, h: 1256 },
+      { src: "/results/result-7.webp", w: 871, h: 1280 },
+    ],
+    certificatesBg: img("/images/certificates-bg-2.webp", "Certificates section background"),
+    certificates: [
+      "cert-iso9001-zh",
+      "cert-iso14001",
+      "cert-iso45001",
+      "cert-ce-rohs",
+      "cert-fcc",
+      "cert-fda",
+      "cert-food-safety-zh",
+      "cert-aaa-quality-service",
+      "cert-aaa-integrity",
+      "cert-aaa-service-credit",
+      "cert-aaa-industry-integrity",
+      "cert-brand-overseas",
+      "cert-nigeria-embassy",
+      "cert-1-scan",
+    ].map((f) => img(`/certificates/${f}.webp`, "Published certificate scan")),
+    people: [
+      img("/images/person-feng-hq-trim.webp", "Feng Yunshan"),
+      img("/images/person-lin-chest.webp", "Lin Junxian"),
+      img("/images/person-luo.webp", "Luo Dan"),
+      img("/images/person-ramaswamy.webp", "Prof. Hosahalli Ramaswamy"),
+      img("/images/person-ma.webp", "Prof. Ma Zhigang"),
+    ],
+    consultantBg: img("/images/about-bg-gold-v2-mir.webp", "Dark gold consultant background"),
+    consultant: img("/images/person-gary-yeow.webp", "Gary Yeow portrait, cut-out on transparent background, waist up"),
     logoCe: img("/images/logo-ce.svg", "Monochrome CE mark (SVG)"),
     logoFcc: img("/images/logo-fcc.svg", "Monochrome FCC mark (SVG)"),
     og: img("/images/og.jpg", "1200×630. Wordmark on forest green with product"),

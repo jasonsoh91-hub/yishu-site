@@ -31,13 +31,6 @@ export function Catalog({ c }: { c: Content }) {
                       </li>
                     ))}
                   </ul>
-                  <a
-                    href={`#contact?interest=bundle&set=${it.id}`}
-                    className="mt-auto inline-flex min-h-11 items-end pt-4 text-xs font-medium tracking-[0.14em] text-gold-text uppercase underline-offset-4 hover:underline"
-                  >
-                    {k.askLabel}
-                    <span className="sr-only">: {it.name}</span>
-                  </a>
                 </div>
               </article>
             </Reveal>

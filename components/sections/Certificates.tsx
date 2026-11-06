@@ -2,9 +2,9 @@ import type { Content } from "@/content/types";
 import { site } from "@/content/site";
 import { imageExists } from "@/lib/images";
 import { Img } from "../ui/Img";
+import { Icon } from "../ui/Icon";
 import { Reveal } from "../ui/Reveal";
 import { SectionHeading } from "../ui/SectionHeading";
-import { CertificateGallery } from "./CertificateGallery";
 
 export function Certificates({ c }: { c: Content }) {
   const t = c.certificates;
@@ -24,9 +24,21 @@ export function Certificates({ c }: { c: Content }) {
       </div>
       <Reveal className="mx-auto grid max-w-7xl gap-10 px-5 sm:px-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
         <SectionHeading id="certificates-title" eyebrow={t.eyebrow} title={t.title} lead={t.lead} tone="light" />
-        <div className="contents">
-          <CertificateGallery certs={certs} ui={c.ui} />
-        </div>
+        <ul className="divide-y divide-gold/25">
+          {certs.map((cert) => (
+            <li key={cert.src} className="flex items-center justify-between gap-4 py-4">
+              <div className="min-w-0">
+                <p className="font-display text-lg sm:text-xl">{cert.name}</p>
+                <p className="mt-0.5 text-sm text-ink/55">{cert.scope}</p>
+              </div>
+              {cert.exists ? (
+                <a href={cert.src} download className="glass-chip h-9 w-9 shrink-0 rounded-full text-gold-deep" aria-label={`${c.ui.download}: ${cert.name}`}>
+                  <Icon name="download" className="h-4 w-4" />
+                </a>
+              ) : null}
+            </li>
+          ))}
+        </ul>
       </Reveal>
     </section>
   );

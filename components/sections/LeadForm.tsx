@@ -6,10 +6,7 @@ import type { Content } from "@/content/types";
 type Fields = { name: string; phone: string; email: string; interest: string; message: string; company: string };
 type Errors = Partial<Record<"name" | "phone" | "email", string>>;
 
-/** Lead payload contract (spec 3.14). */
-export type LeadPayload = { name: string; phone: string; email?: string; interest: string; message?: string; locale: string };
-
-const INTEREST_PREFIX = "#contact?interest=";
+const INTEREST_PREFIX = "#contacts?interest=";
 
 function UnderlineField({
   id,
@@ -56,21 +53,20 @@ const inputCls =
 export function LeadForm({
   c,
   sets,
-  locale,
+  enabled,
 }: {
   c: Content["contact"];
   sets: { id: string; name: string }[];
-  locale: string;
+  enabled: boolean;
 }) {
   const uid = useId();
   const id = (k: string) => `${uid}-${k}`;
   const [f, setF] = useState<Fields>({ name: "", phone: "", email: "", interest: c.interests[0]?.id ?? "", message: "", company: "" });
   const [errors, setErrors] = useState<Errors>({});
-  const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "failed">("idle");
   const formRef = useRef<HTMLFormElement>(null);
-  const successRef = useRef<HTMLDivElement>(null);
 
-  // Links like "#contact?interest=partner" (or "&set=board") preselect the interest field, then scroll to #contact.
+  // Links like "#contacts?interest=partner" preselect the interest field, then scroll to #contacts.
   useEffect(() => {
     const apply = (hash: string) => {
       const q = new URLSearchParams(hash.slice(INTEREST_PREFIX.length - "interest=".length));
@@ -84,11 +80,11 @@ export function LeadForm({
           message: setName && !prev.message ? setName : prev.message,
         }));
       }
-      const target = document.getElementById("contact");
+      const target = document.getElementById("contacts");
       target?.scrollIntoView({
         behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
       });
-      history.replaceState(null, "", "#contact");
+      history.replaceState(null, "", "#contacts");
     };
     const onClick = (e: MouseEvent) => {
       const a = (e.target as Element | null)?.closest?.("a[href]");
@@ -119,6 +115,7 @@ export function LeadForm({
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!enabled || status === "sending") return;
     const errs = validate(f);
     setErrors(errs);
     const first = (Object.keys(errs) as (keyof Errors)[])[0];
@@ -127,52 +124,39 @@ export function LeadForm({
       return;
     }
     setStatus("sending");
-    // Honeypot: bots fill the hidden "company" field. Pretend success, send nothing.
-    if (f.company) {
+    try {
+      const res = await fetch("/api/lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...f, locale: document.documentElement.lang, page: window.location.pathname }),
+      });
+      const out = (await res.json().catch(() => null)) as { ok?: boolean } | null;
+      if (!res.ok || !out?.ok) throw new Error(String(res.status));
       setStatus("sent");
-      return;
+    } catch {
+      setStatus("failed");
     }
-    const payload: LeadPayload = {
-      name: f.name.trim(),
-      phone: f.phone.trim(),
-      email: f.email.trim() || undefined,
-      interest: f.interest,
-      message: f.message.trim() || undefined,
-      locale,
-    };
-    // TODO(owner): wire delivery. No backend yet. Options:
-    //   1. Email: add app/api/lead/route.ts (export a named `POST`), send via Resend, then
-    //      `await fetch("/api/lead", { method: "POST", body: JSON.stringify(payload) })`.
-    //   2. WhatsApp fallback: window.open(`${site.contact.whatsapp}?text=${encodeURIComponent(summary)}`).
-    console.log("[lead] payload (not sent anywhere yet):", payload);
-    await new Promise((r) => setTimeout(r, 600));
-    setStatus("sent");
   };
 
-  useEffect(() => {
-    if (status === "sent") successRef.current?.focus();
-  }, [status]);
+  const reset = () => {
+    setF((prev) => ({ ...prev, name: "", phone: "", email: "", message: "", company: "" }));
+    setErrors({});
+    setStatus("idle");
+  };
+
+  const describedBy = (k: keyof Errors) => (errors[k] ? `${id(k)}-error` : undefined);
 
   if (status === "sent") {
     return (
-      <div ref={successRef} tabIndex={-1} role="status" className="glass-card rounded-card p-8 text-center outline-none">
-        <p className="font-display text-4xl text-ink">{c.success.title}</p>
-        <p className="mt-3 text-ink/70">{c.success.text}</p>
-        <button
-          type="button"
-          onClick={() => {
-            setF((p) => ({ ...p, name: "", phone: "", email: "", message: "", company: "" }));
-            setStatus("idle");
-          }}
-          className="mt-6 min-h-11 text-xs font-medium tracking-[0.14em] text-gold-text uppercase underline-offset-4 hover:underline"
-        >
+      <div role="status" className="rounded-card border border-gold/25 bg-white/35 p-8 text-center">
+        <p className="font-display text-3xl text-ink">{c.success.title}</p>
+        <p className="mt-3 text-stone">{c.success.text}</p>
+        <button type="button" onClick={reset} className="btn btn-gold mt-8">
           {c.success.again}
         </button>
       </div>
     );
   }
-
-  const describedBy = (k: keyof Errors) => (errors[k] ? `${id(k)}-error` : undefined);
 
   return (
     <form ref={formRef} noValidate onSubmit={onSubmit} className="relative space-y-8" aria-label={c.title}>
@@ -242,17 +226,19 @@ export function LeadForm({
       </div>
 
       <div>
-        <button type="submit" disabled={status === "sending"} className="btn btn-gold w-full disabled:opacity-60">
-          {status === "sending" ? (
-            <>
-              <span aria-hidden className="h-4 w-4 animate-spin rounded-full border-2 border-ink/30 border-t-ink" />
-              {c.labels.sending}
-            </>
-          ) : (
-            c.labels.submit
-          )}
+        <button
+          type="submit"
+          disabled={!enabled || status === "sending"}
+          className="btn btn-gold w-full disabled:cursor-not-allowed disabled:opacity-45"
+        >
+          {status === "sending" ? c.labels.sending : c.labels.submit}
         </button>
-        <p className="mt-4 text-center text-xs text-stone">{c.consent}</p>
+        {status === "failed" ? (
+          <p role="alert" className="mt-4 text-center text-sm text-error">
+            {c.errors.send}
+          </p>
+        ) : null}
+        <p className="mt-4 text-center text-xs text-stone">{enabled ? c.consent : c.labels.unavailable}</p>
       </div>
     </form>
   );

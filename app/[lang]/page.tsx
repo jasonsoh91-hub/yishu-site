@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { Header } from "@/components/Header";
+import { About } from "@/components/sections/About";
 import { Catalog } from "@/components/sections/Catalog";
 import { Certificates } from "@/components/sections/Certificates";
 import { Compare } from "@/components/sections/Compare";
@@ -10,10 +11,12 @@ import { Footer } from "@/components/sections/Footer";
 import { Hero } from "@/components/sections/Hero";
 import { HowTo } from "@/components/sections/HowTo";
 import { Ingredients } from "@/components/sections/Ingredients";
+import { Markets } from "@/components/sections/Markets";
 import { Partner } from "@/components/sections/Partner";
 import { People } from "@/components/sections/People";
 import { Philosophy } from "@/components/sections/Philosophy";
 import { Product } from "@/components/sections/Product";
+import { Results } from "@/components/sections/Results";
 import { Trust } from "@/components/sections/Trust";
 import { stripRich } from "@/components/ui/RichText";
 import { getContent, isLocale, languages, site } from "@/content";
@@ -31,8 +34,8 @@ export default async function Page({ params }: PageProps<"/[lang]">) {
       "@type": "Organization",
       name: site.resellerName,
       url,
-      email: site.contact.email,
-      telephone: site.contact.phone,
+      ...(site.contact.email ? { email: site.contact.email } : {}),
+      ...(site.contact.phone ? { telephone: site.contact.phone } : {}),
       description: c.footer.resellerStatement,
     },
     {
@@ -67,18 +70,21 @@ export default async function Page({ params }: PageProps<"/[lang]">) {
       <main id="main">
         <Hero c={c} />
         <Trust c={c} />
+        <About c={c} />
+        <Markets c={c} />
         <Philosophy c={c} />
         <Product c={c} />
         <Ingredients c={c} />
         <HowTo c={c} />
         <Compare c={c} />
+        <Results c={c} />
         <Catalog c={c} />
         <Certificates c={c} />
         <People c={c} />
         <Consultant c={c} />
         <Faq c={c} />
         <Partner c={c} />
-        <Contact c={c} locale={lang} />
+        <Contact c={c} />
       </main>
       <Footer c={c} />
       <script

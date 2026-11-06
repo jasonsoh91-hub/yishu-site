@@ -54,9 +54,11 @@ export function Footer({ c }: { c: Content }) {
           <p>
             © {year} {site.resellerName}. {f.legal}
           </p>
-          <a href={site.privacyHref} className="inline-flex min-h-11 items-center hover:text-gold-bright">
-            {f.privacy}
-          </a>
+          {site.privacyHref ? (
+            <a href={site.privacyHref} className="inline-flex min-h-11 items-center hover:text-gold-bright">
+              {f.privacy}
+            </a>
+          ) : null}
         </div>
       </div>
     </footer>

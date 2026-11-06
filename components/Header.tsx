@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, X } from "lucide-react";
+import { ChevronDown, Globe2, Menu, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Content, Locale } from "@/content/types";
 import { BrandWordmark } from "./ui/BrandWordmark";
@@ -32,39 +32,64 @@ function LangSwitcher({
   className?: string;
   onPick?: () => void;
 }) {
+  const [open, setOpen] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
+  const current = langs.find((lang) => lang.code === locale) ?? langs[0];
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (event: MouseEvent) => {
+      if (!root.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", close);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", close);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
   return (
-    <nav aria-label={label} className={`flex items-center gap-1 ${className}`}>
-      {langs.map((l) => {
-        const current = l.code === locale;
-        return (
-          <a
-            key={l.code}
-            href={`/${l.code}`}
-            hrefLang={l.code}
-            lang={l.code}
-            aria-current={current ? "true" : undefined}
-            title={l.name}
-            onClick={(e) => {
-              e.preventDefault();
-              onPick?.();
-              if (!current) switchLocale(l.code, activeId);
-            }}
-            className={`inline-flex h-11 min-w-11 items-center justify-center rounded-full px-2 text-xs font-medium tracking-[0.12em] transition-colors duration-300 ${
-              current
-                ? light
-                  ? "text-gold-text"
-                  : "text-gold-bright"
-                : light
-                  ? "text-ink/60 hover:text-gold-deep"
-                  : "text-cream/60 hover:text-gold"
-            }`}
-          >
-            <span className={current ? "border-b border-current pb-0.5" : "pb-0.5"}>{l.short}</span>
-            <span className="sr-only"> {l.name}</span>
-          </a>
-        );
-      })}
-    </nav>
+    <div ref={root} className={`relative ${className}`}>
+      <button
+        type="button"
+        aria-label={label}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+        className={`glass-chip flex h-11 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium transition hover:text-gold ${light ? "text-ink/85" : "text-cream/85"}`}
+      >
+        <Globe2 className="h-4 w-4" strokeWidth={1.5} />
+        {current.short}
+        <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} strokeWidth={1.5} />
+      </button>
+      {open ? (
+        <nav aria-label={label} className={`absolute top-[calc(100%+0.5rem)] right-0 min-w-36 overflow-hidden rounded-card border p-1 shadow-xl backdrop-blur-xl ${light ? "border-gold/20 bg-cream/95 text-ink" : "border-white/10 bg-ink/95 text-cream"}`}>
+          {langs.map((lang) => (
+            <a
+              key={lang.code}
+              href={`/${lang.code}`}
+              hrefLang={lang.code}
+              lang={lang.code}
+              aria-current={lang.code === locale ? "page" : undefined}
+              onClick={(event) => {
+                event.preventDefault();
+                setOpen(false);
+                onPick?.();
+                if (lang.code !== locale) switchLocale(lang.code, activeId);
+              }}
+              className={`flex min-h-11 items-center justify-between rounded-xl px-3 text-sm transition-colors ${lang.code === locale ? "text-gold-text" : light ? "hover:bg-forest/8" : "hover:bg-white/8"}`}
+            >
+              <span>{lang.name}</span>
+              <span className="text-xs opacity-60">{lang.short}</span>
+            </a>
+          ))}
+        </nav>
+      ) : null}
+    </div>
   );
 }
 
@@ -193,7 +218,7 @@ export function Header({
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50 py-4 sm:py-5">
+      <header className="fixed inset-x-0 top-0 z-50 py-5">
         <div
           aria-hidden
           className={`nav-glass absolute inset-0 transition-opacity duration-500 ${
@@ -201,15 +226,8 @@ export function Header({
           }`}
         />
         <div className="relative mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
-          <a href="#top" className="flex min-h-11 items-baseline gap-3" aria-label={`${wordmark}, ${ui.authorizedTag}`}>
-            <BrandWordmark text={wordmark} tone={onLight ? "dark" : "light"} className="text-[1.75rem] sm:text-3xl" />
-            <span
-              className={`hidden text-[0.65rem] uppercase tracking-[0.2em] transition-colors duration-500 sm:inline ${
-                onLight ? "text-gold-text" : "text-gold-bright/70"
-              }`}
-            >
-              {ui.authorizedTag}
-            </span>
+          <a href="#top" className="shrink-0" aria-label={wordmark}>
+            <BrandWordmark text={wordmark} tone={onLight ? "dark" : "light"} className="text-2xl" />
           </a>
 
           <nav aria-label={ui.mainNav} className="hidden lg:block">
@@ -236,14 +254,13 @@ export function Header({
             </ul>
           </nav>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-3">
             <LangSwitcher
               langs={langs}
               locale={locale}
               activeId={activeId}
               label={ui.language}
               light={onLight}
-              className="hidden sm:flex"
             />
             <button
               ref={burgerRef}
@@ -252,7 +269,7 @@ export function Header({
               aria-expanded={open}
               aria-controls="mobile-menu"
               onClick={() => (open ? close() : setOpen(true))}
-              className={`glass-chip h-11 w-11 rounded-full lg:hidden ${onLight ? "text-ink" : "text-cream"}`}
+              className={`glass-chip h-9 w-9 rounded-full lg:hidden ${onLight ? "text-ink" : "text-cream"}`}
             >
               {open ? <X className="h-5 w-5" strokeWidth={1.5} /> : <Menu className="h-5 w-5" strokeWidth={1.5} />}
             </button>
@@ -291,16 +308,6 @@ export function Header({
               </li>
             ))}
           </ul>
-          <div className="menu-item mt-8" style={{ animationDelay: `${nav.length * 50}ms` }}>
-            <LangSwitcher
-              langs={langs}
-              locale={locale}
-              activeId={activeId}
-              label={ui.language}
-              light={false}
-              onPick={() => close(false)}
-            />
-          </div>
         </nav>
       </div>
     </>

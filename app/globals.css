@@ -71,6 +71,10 @@ body {
   0% { opacity: 0.7; scale: 1; }
   70%, 100% { opacity: 0; scale: 2.9; }
 }
+@keyframes map-flow {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: -0.12; }
+}
 @keyframes svg-ping {
   0% { opacity: 0.8; r: 2.8; }
   70%, 100% { opacity: 0; r: 9; }
@@ -294,6 +298,25 @@ body {
 /* ------------------------------------------------------------------ */
 .hotspot-ping { animation: hotspot-ping 2.4s var(--ease-out) infinite; }
 .map-ping { animation: svg-ping 2.4s var(--ease-out) infinite; transform-box: fill-box; }
+
+/* Markets map: halos swell, arcs draw out from HQ, pins pop, labels fade.
+   Default state is final, so only an armed (JS, motion-OK) <Reveal> animates. */
+.map-region, .map-pin { transform-box: fill-box; transform-origin: center; }
+.map-region { transition: transform 1.4s var(--ease-lux), opacity 1.4s var(--ease-lux); }
+.map-pin { transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease-out; }
+.map-arc { stroke-dasharray: 1; stroke-dashoffset: 0; transition: stroke-dashoffset 1.6s var(--ease-lux); }
+.map-label { transition: opacity 0.8s ease-out; }
+.map-flow { stroke-dasharray: 0.12 1; stroke-opacity: 0.8; animation: map-flow 3.2s linear infinite; }
+.reveal-armed .map-region { transform: scale(0.35); opacity: 0; }
+.reveal-armed .map-pin { transform: scale(0); opacity: 0; }
+.reveal-armed .map-arc { stroke-dashoffset: 1; }
+.reveal-armed .map-label { opacity: 0; }
+.reveal-armed .map-flow { visibility: hidden; }
+.reveal-armed.is-visible .map-region,
+.reveal-armed.is-visible .map-pin { transform: none; opacity: 1; }
+.reveal-armed.is-visible .map-arc { stroke-dashoffset: 0; }
+.reveal-armed.is-visible .map-label { opacity: 1; }
+.reveal-armed.is-visible .map-flow { visibility: visible; }
 .placeholder-stripes {
   background-image:
     repeating-linear-gradient(135deg, color-mix(in srgb, var(--color-gold) 9%, transparent) 0 1px, transparent 1px 14px),
@@ -347,6 +370,7 @@ dialog.lightbox[open] .lightbox-stage { animation: lightbox-in 0.3s var(--ease-l
   .btn-glass::before,
   .hotspot-ping,
   .map-ping,
+  .map-flow,
   dialog.lightbox[open] .lightbox-stage,
   #mobile-menu:not([hidden]) > div,
   #mobile-menu:not([hidden]) .menu-item {
@@ -358,7 +382,7 @@ dialog.lightbox[open] .lightbox-stage { animation: lightbox-in 0.3s var(--ease-l
   .btn-glass::before {
     background-position: 50% 0;
   }
-  .hotspot-ping, .map-ping { opacity: 0; }
+  .hotspot-ping, .map-ping, .map-flow { opacity: 0; }
   .reveal-armed { opacity: 1; transform: none; transition: none; }
   .level-bar, .reveal-armed .level-bar { width: var(--bar); transition: none; }
   *, *::before, *::after { transition-duration: 0.01ms !important; }
